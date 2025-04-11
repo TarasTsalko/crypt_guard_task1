@@ -78,6 +78,8 @@ int main(int argc, char *argv[]) {
         //
 
         CryptoGuard::ProgramOptions options;
+        const bool parseRes = options.Parse( argc, argv );
+        if ( !parseRes ) return 1;
 
         CryptoGuard::CryptoGuardCtx cryptoCtx;
 
