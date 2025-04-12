@@ -108,7 +108,7 @@ void CryptoGuardCtx::EncryptFile(std::iostream &inStream, std::iostream &outStre
 
 void CryptoGuardCtx::DecryptFile(std::iostream &inStream, std::iostream &outStream, std::string_view password) {
     assert(pImpl_);
-    // pImpl_->DecryptFile( inStream, outStream, password );
+    pImpl_->DecryptFile( inStream, outStream, password );
 }
 
 std::string CryptoGuardCtx::CalculateChecksum(std::iostream &inStream) {
