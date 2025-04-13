@@ -20,7 +20,9 @@ ProgramOptions::~ProgramOptions() = default;
 
 bool ProgramOptions::Parse(int argc, char *argv[]) {
 
-    if (argc == 0) {
+    // В функции используется std::cout вместо std::print, так как desc_ выводится в поток без дополнительный
+    // действий в отличии std::print
+    if (argc < 2) {
         std::cout << "Args error: an empty set of arguments was passed." << std::endl;
         return false;
     }
@@ -39,7 +41,7 @@ bool ProgramOptions::Parse(int argc, char *argv[]) {
 
     if (vm.count("help")) {
         std::cout << desc_;
-        return false;
+        return false;  // Так как после вывода справки не нужно совершать действий (возможно для функции подошелбы enum)
     }
 
     if (vm.count("command")) {
@@ -51,7 +53,7 @@ bool ProgramOptions::Parse(int argc, char *argv[]) {
         }
         this->command_ = it->second;
     } else {
-        std::cout << "Args:error: Command not specified" << std::endl;
+        std::cout << "Args:error: 'command' not specified" << std::endl;
         return false;
     }
 

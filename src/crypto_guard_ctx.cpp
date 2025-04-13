@@ -68,7 +68,6 @@ public:
 
         return res.str();
     }
-
 private:
     AesCipherParams CreateChiperParamsFromPassword(std::string_view password) {
         AesCipherParams params;
@@ -130,9 +129,6 @@ private:
             outStream.put(outBuf[i]);
         }
     }
-
-private:
-    std::string output;
 };
 
 CryptoGuardCtx::CryptoGuardCtx() : pImpl_(std::make_unique<CryptoGuardCtx::PImpl>()) {}
