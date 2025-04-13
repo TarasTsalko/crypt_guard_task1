@@ -3,6 +3,8 @@
 #include <cassert>
 #include <memory>
 #include <openssl/evp.h>
+#include <sstream>
+#include <iomanip>
 
 #include<iostream>
 #include <vector>
@@ -40,7 +42,41 @@ public:
         IncryptDecryptImpl( inStream, outStream, password, 0 );
     };
 
-    std::string CalculateChecksum(std::iostream &inStream) { return "NOT_IMPLEMENTED"; }
+    std::string CalculateChecksum(std::iostream &inStream)
+    {
+        if (!inStream.good())
+            throw std::ios_base::failure("Invalide input streams");
+
+        auto deleter = [](EVP_MD_CTX *ptr) { EVP_MD_CTX_free(ptr); };
+        std::unique_ptr<EVP_MD_CTX, decltype(deleter)> mdctx(EVP_MD_CTX_new());
+        const EVP_MD *md = EVP_get_digestbyname( "sha256" );
+        assert( md != nullptr );
+
+        if (!EVP_DigestInit_ex2(mdctx.get(), md, nullptr))
+            throw std::runtime_error{"Message digest initialization failed."};
+
+        std::vector<unsigned char> mdValue( EVP_MAX_MD_SIZE );
+        std::string dataBlock;
+        unsigned int messageLen;
+        while( inStream.good() )
+        {
+            inStream >> dataBlock;
+            if (!EVP_DigestUpdate( mdctx.get(), dataBlock.data(), dataBlock.size() ))
+                throw std::runtime_error{"Message digest update failed."};
+        }
+
+        if (!EVP_DigestFinal_ex(mdctx.get(), mdValue.data(), &messageLen))
+            throw std::runtime_error{"Message digest finalization failed"};
+
+        std::stringstream res;
+        for ( unsigned int i= 0; i < messageLen; ++i )
+            res << std::setfill('0') << std::hex << std::setw(2) << static_cast<unsigned int>(mdValue[i]);
+
+        if ( res.bad() )
+            std::runtime_error{ "calculate checksum: error writing in output stream" };
+
+        return res.str();
+    }
 
 private:
 
@@ -65,6 +101,7 @@ AesCipherParams CreateChiperParamsFromPassword(std::string_view password) {
         {
             throw std::ios_base::failure( "Invalide input streams" );
         }
+
         auto deleter = [](EVP_CIPHER_CTX *ptr) { EVP_CIPHER_CTX_free(ptr); };
         std::unique_ptr<EVP_CIPHER_CTX, decltype(deleter)> ctx( EVP_CIPHER_CTX_new() );
 
