@@ -40,13 +40,13 @@ public:
         if (!inStream.good())
             throw std::ios_base::failure("Invalid input streams");
 
-        auto deleter = [](EVP_MD_CTX *ptr) { EVP_MD_CTX_free(ptr); };
-        std::unique_ptr<EVP_MD_CTX, decltype(deleter)> mdctx(EVP_MD_CTX_new());
+        using MdCtxPtr = std::unique_ptr<EVP_MD_CTX, decltype([](EVP_MD_CTX *ptr) { EVP_MD_CTX_free(ptr); })>;
+        MdCtxPtr mdctx(EVP_MD_CTX_new());
         const EVP_MD *md = EVP_get_digestbyname("sha256");
         assert(md != nullptr);
 
         if (!EVP_DigestInit_ex2(mdctx.get(), md, nullptr))
-            OpenSSLErrorHandling();
+            GetAndThrowOpenSSLError();
 
         std::vector<unsigned char> mdValue(EVP_MAX_MD_SIZE);
         std::string dataBlock;
@@ -55,18 +55,18 @@ public:
             inStream.read(dataBlock.data(), BLOCK_SIZE_);
             messageLen = inStream.gcount();
             if (!EVP_DigestUpdate(mdctx.get(), dataBlock.data(), messageLen))
-                OpenSSLErrorHandling();
+                GetAndThrowOpenSSLError();
         }
 
         if (!EVP_DigestFinal_ex(mdctx.get(), mdValue.data(), &messageLen))
-            OpenSSLErrorHandling();
+            GetAndThrowOpenSSLError();
 
         std::stringstream res;
         for (unsigned int i = 0; i < messageLen; ++i)
             res << std::setfill('0') << std::hex << std::setw(2) << static_cast<unsigned int>(mdValue[i]);
 
         if (res.bad())
-            std::runtime_error{"calculate checksum: error writing in output stream"};
+            throw std::runtime_error{"calculate checksum: error writing in output stream"};
 
         return res.str();
     }
@@ -99,7 +99,7 @@ private:
         params.encrypt = mode;
         // Инициализируем cipher
         if (!EVP_CipherInit_ex(ctx.get(), params.cipher, nullptr, params.key.data(), params.iv.data(), params.encrypt))
-            OpenSSLErrorHandling();
+            GetAndThrowOpenSSLError();
 
         std::vector<char> inBuf(BLOCK_SIZE_);
         std::vector<char> outBuf(BLOCK_SIZE_ + EVP_MAX_BLOCK_LENGTH);
@@ -110,7 +110,7 @@ private:
 
             if (!EVP_CipherUpdate(ctx.get(), reinterpret_cast<unsigned char *>(outBuf.data()), &outLen,
                                   reinterpret_cast<unsigned char *>(inBuf.data()), static_cast<int>(part)))
-                OpenSSLErrorHandling();
+                GetAndThrowOpenSSLError();
 
             outStream.write(outBuf.data(), outLen);
             if (inStream.bad() || outStream.bad())
@@ -119,14 +119,14 @@ private:
         }
 
         if (!EVP_CipherFinal_ex(ctx.get(), reinterpret_cast<unsigned char *>(outBuf.data()), &outLen))
-            OpenSSLErrorHandling();
+            GetAndThrowOpenSSLError();
 
         for (int i = 0; i < outLen; ++i) {
             outStream.put(outBuf[i]);
         }
     }
 
-    void OpenSSLErrorHandling() const {
+    void GetAndThrowOpenSSLError() const {
         unsigned long e = ERR_get_error();
         std::vector<char> buff(1024);
         ERR_error_string_n(e, buff.data(), buff.size());

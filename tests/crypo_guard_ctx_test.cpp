@@ -41,14 +41,13 @@ TEST(TestCryptoGuardCtx, BadOutputDataStreamEncryptFileTest) {
 }
 
 TEST(TestCryptoGuardCtx, EncryptFileTest) {
-    std::stringstream inputStream, encryptedStream, decryptedStream;
+    std::stringstream inputStream("Life is like a Box of Chocolates");
+    std::stringstream encryptedStream, decryptedStream;
     const std::string password = "123";
     CryptoGuard::CryptoGuardCtx cryptoGuardCtx;
-    const std::string inputData = "Life is like a Box of Chocolates";
-    inputStream << inputData;
     cryptoGuardCtx.EncryptFile(inputStream, encryptedStream, password);
     cryptoGuardCtx.DecryptFile(encryptedStream, decryptedStream, password);
-    EXPECT_STREQ(decryptedStream.str().c_str(), inputData.data());
+    EXPECT_STREQ(decryptedStream.str().c_str(), inputStream.str().c_str());
 }
 
 TEST(TestCryptoGuardCtx, BadInputDataStreamDecryptFileTest) {

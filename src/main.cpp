@@ -19,21 +19,21 @@ int main(int argc, char *argv[]) {
         using COMMAND_TYPE = CryptoGuard::ProgramOptions::COMMAND_TYPE;
         switch (options.GetCommand()) {
         case COMMAND_TYPE::ENCRYPT: {
-            std::fstream inStream(options.GetInputFile().c_str(), std::ios::in);
-            std::fstream outStream(options.GetOutputFile().c_str(), std::ios::out);
+            std::fstream inStream(options.GetInputFile(), std::ios::in);
+            std::fstream outStream(options.GetOutputFile(), std::ios::out);
             cryptoCtx.EncryptFile(inStream, outStream, options.GetPassword());
             std::print("File encoded successfully\n");
             break;
         }
         case COMMAND_TYPE::DECRYPT: {
-            std::fstream inStream(options.GetInputFile().c_str(), std::ios::in);
-            std::fstream outStream(options.GetOutputFile().c_str(), std::ios::out);
+            std::fstream inStream(options.GetInputFile(), std::ios::in);
+            std::fstream outStream(options.GetOutputFile(), std::ios::out);
             cryptoCtx.DecryptFile(inStream, outStream, options.GetPassword());
             std::print("File decoded successfully\n");
             break;
         }
         case COMMAND_TYPE::CHECKSUM: {
-            std::fstream inStream(options.GetInputFile().c_str(), std::ios::in);
+            std::fstream inStream(options.GetInputFile(), std::ios::in);
             const std::string checksum = cryptoCtx.CalculateChecksum(inStream);
             std::print("Checksum: {}\n", checksum.c_str());
             break;
