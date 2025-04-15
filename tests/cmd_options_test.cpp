@@ -1,3 +1,4 @@
+#include <array>
 #include <gtest/gtest.h>
 #include <string>
 
@@ -17,37 +18,35 @@ TEST(ProgramOptions, ParseTest_EmptyArgsTest) {
 }
 
 TEST(ProgramOptions, ParseTest_CommandNotSpecified) {
-    char *args[] = {"CryptGuard", "-i", "input.txt", "-o", "output.txt", "-p", "123"};
-    const int argc = 7;
+    std::array<const char *, 7> args = {"CryptGuard", "-i", "input.txt", "-o", "output.txt", "-p", "123"};
     CryptoGuard::ProgramOptions options;
-    const bool res = options.Parse(argc, args);
+    const bool res = options.Parse(args.size(), const_cast<char **>(args.data()));
     EXPECT_FALSE(res);
 }
 
 TEST(ProgramOptions, ParseTest_CommandNotSupported) {
-    char *args[] = {"CryptGuard", "-i",         "input.txt", "--command", "encrypt_2",
-                    "-o",         "output.txt", "-p",        "123",       nullptr};
-    const int argc = 9;
+    std::array<const char *, 9> args = {"CryptGuard", "-i",         "input.txt", "--command", "encrypt_2",
+                                        "-o",         "output.txt", "-p",        "123"};
     CryptoGuard::ProgramOptions options;
-    const bool res = options.Parse(argc, args);
+    const bool res = options.Parse(args.size(), const_cast<char **>(args.data()));
     EXPECT_FALSE(res);
 }
 
 TEST(ProgramOptions, ParseTest_InputFileNotSpecified) {
-    char *args[] = {"CryptGuard", "-i", "", "--command", "encrypt", "-o", "output.txt", "-p", "123"};
-    const int argc = 9;
+    std::array<const char *, 9> args = {"CryptGuard", "-i",         "",   "--command", "encrypt",
+                                        "-o",         "output.txt", "-p", "123"};
     CryptoGuard::ProgramOptions options;
-    const bool res = options.Parse(argc, args);
+    const bool res = options.Parse(args.size(), const_cast<char **>(args.data()));
     EXPECT_FALSE(res);
     const std::string etalon("");
     EXPECT_EQ(options.GetInputFile(), etalon);
 }
 
 TEST(ProgramOptions, ParseTest_OutputFileNotSpecified) {
-    char *args[] = {"CryptGuard", "-i", "input2.txt", "--command", "encrypt", "-o", "", "-p", "123"};
-    const int argc = 9;
+    std::array<const char *, 9> args = {"CryptGuard", "-i", "input2.txt", "--command", "encrypt",
+                                        "-o",         "",   "-p",         "123"};
     CryptoGuard::ProgramOptions options;
-    const bool res = options.Parse(argc, args);
+    const bool res = options.Parse(args.size(), const_cast<char **>(args.data()));
     EXPECT_FALSE(res);
     const std::string etalon("");
     EXPECT_EQ(options.GetCommand(), CryptoGuard::ProgramOptions::COMMAND_TYPE::ENCRYPT);
@@ -56,20 +55,20 @@ TEST(ProgramOptions, ParseTest_OutputFileNotSpecified) {
 }
 
 TEST(ProgramOptions, ParseTest_PasswordNotSpecified) {
-    char *args[] = {"CryptGuard", "-i", "input.txt", "--command", "encrypt", "-o", "output.txt", "-p", ""};
-    const int argc = 9;
+    std::array<const char *, 9> args = {"CryptGuard", "-i",         "input.txt", "--command", "encrypt",
+                                        "-o",         "output.txt", "-p",        ""};
     CryptoGuard::ProgramOptions options;
-    const bool res = options.Parse(argc, args);
+    const bool res = options.Parse(args.size(), const_cast<char **>(args.data()));
     EXPECT_FALSE(res);
     const std::string etalon("");
     EXPECT_EQ(options.GetPassword(), etalon);
 }
 
 TEST(ProgramOptions, ParseTest_IncorrectMode) {
-    char *args[] = {"CryptGuard", "-i", "input.txt", "-o", "output.txt", "--command", "checksum", "-p", "123"};
-    const int argc = 9;
+    std::array<const char *, 9> args = {"CryptGuard", "-i",       "input.txt", "-o", "output.txt",
+                                        "--command",  "checksum", "-p",        "123"};
     CryptoGuard::ProgramOptions options;
-    const bool res = options.Parse(argc, args);
+    const bool res = options.Parse(args.size(), const_cast<char **>(args.data()));
     EXPECT_FALSE(res);
     const std::string etalon("");
     EXPECT_NE(options.GetPassword(), etalon);
@@ -77,10 +76,10 @@ TEST(ProgramOptions, ParseTest_IncorrectMode) {
 }
 
 TEST(ProgramOptions, ParseTest_IncryptCallShortFormat) {
-    char *args[] = {"CryptGuard", "-i", "input.txt", "-o", "output.txt", "--command", "encrypt", "-p", "123"};
-    const int argc = 9;
+    std::array<const char *, 9> args = {"CryptGuard", "-i",      "input.txt", "-o", "output.txt",
+                                        "--command",  "encrypt", "-p",        "123"};
     CryptoGuard::ProgramOptions options;
-    const bool res = options.Parse(argc, args);
+    const bool res = options.Parse(args.size(), const_cast<char **>(args.data()));
     EXPECT_TRUE(res);
 
     const std::string inputFile = "input.txt";
@@ -94,10 +93,10 @@ TEST(ProgramOptions, ParseTest_IncryptCallShortFormat) {
 }
 
 TEST(ProgramOptions, ParseTest_DecryptCallShortFormat) {
-    char *args[] = {"CryptGuard", "-i", "input.txt", "-o", "output.txt", "--command", "decrypt", "-p", "123"};
-    const int argc = 9;
+    std::array<const char *, 9> args = {"CryptGuard", "-i",      "input.txt", "-o", "output.txt",
+                                        "--command",  "decrypt", "-p",        "123"};
     CryptoGuard::ProgramOptions options;
-    const bool res = options.Parse(argc, args);
+    const bool res = options.Parse(args.size(), const_cast<char **>(args.data()));
     EXPECT_TRUE(res);
 
     const std::string inputFile = "input.txt";
@@ -110,10 +109,9 @@ TEST(ProgramOptions, ParseTest_DecryptCallShortFormat) {
 }
 
 TEST(ProgramOptions, ParseTest_ChecksumCallShortFormat) {
-    char *args[] = {"CryptGuard", "-i", "input.txt", "--command", "checksum"};
-    const int argc = 5;
+    std::array<const char *, 5> args = {"CryptGuard", "-i", "input.txt", "--command", "checksum"};
     CryptoGuard::ProgramOptions options;
-    const bool res = options.Parse(argc, args);
+    const bool res = options.Parse(args.size(), const_cast<char **>(args.data()));
     EXPECT_TRUE(res);
 
     const std::string inputFile = "input.txt";
@@ -122,11 +120,10 @@ TEST(ProgramOptions, ParseTest_ChecksumCallShortFormat) {
 }
 
 TEST(ProgramOptions, ParseTest_IncryptCallFullFormat) {
-    char *args[] = {"CryptGuard", "--input", "input.txt",  "--output", "output.txt",
-                    "--command",  "encrypt", "--password", "123"};
-    const int argc = 9;
+    std::array<const char *, 9> args = {"CryptGuard", "--input", "input.txt",  "--output", "output.txt",
+                                        "--command",  "encrypt", "--password", "123"};
     CryptoGuard::ProgramOptions options;
-    const bool res = options.Parse(argc, args);
+    const bool res = options.Parse(args.size(), const_cast<char **>(args.data()));
     EXPECT_TRUE(res);
 
     const std::string inputFile = "input.txt";
@@ -140,11 +137,10 @@ TEST(ProgramOptions, ParseTest_IncryptCallFullFormat) {
 }
 
 TEST(ProgramOptions, ParseTest_DecryptCallFullFormat) {
-    char *args[] = {"CryptGuard", "--input", "input.txt",  "--output", "output.txt",
-                    "--command",  "decrypt", "--password", "123"};
-    const int argc = 9;
+    std::array<const char *, 9> args = {"CryptGuard", "--input", "input.txt",  "--output", "output.txt",
+                                        "--command",  "decrypt", "--password", "123"};
     CryptoGuard::ProgramOptions options;
-    const bool res = options.Parse(argc, args);
+    const bool res = options.Parse(args.size(), const_cast<char **>(args.data()));
     EXPECT_TRUE(res);
 
     const std::string inputFile = "input.txt";
@@ -157,10 +153,9 @@ TEST(ProgramOptions, ParseTest_DecryptCallFullFormat) {
 }
 
 TEST(ProgramOptions, ParseTest_ChecksumCallFullFormat) {
-    char *args[] = {"CryptGuard", "--input", "input.txt", "--command", "checksum"};
-    const int argc = 5;
+    std::array<const char *, 5> args = {"CryptGuard", "--input", "input.txt", "--command", "checksum"};
     CryptoGuard::ProgramOptions options;
-    const bool res = options.Parse(argc, args);
+    const bool res = options.Parse(args.size(), const_cast<char **>(args.data()));
     EXPECT_TRUE(res);
 
     const std::string inputFile = "input.txt";
