@@ -1,6 +1,7 @@
 #include "crypto_guard_ctx.h"
 
 #include <cassert>
+#include <format>
 #include <iomanip>
 #include <memory>
 #include <openssl/evp.h>
@@ -130,7 +131,7 @@ private:
         unsigned long e = ERR_get_error();
         std::vector<char> buff(1024);
         ERR_error_string_n(e, buff.data(), buff.size());
-        throw std::runtime_error(buff.data());
+        throw std::runtime_error(std::format("Internal error: '{}'", buff.data()));
     }
 
 private:

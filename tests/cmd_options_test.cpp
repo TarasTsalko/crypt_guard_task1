@@ -1,78 +1,121 @@
 #include <array>
 #include <gtest/gtest.h>
+#include <iostream>
+#include <stdexcept>
 #include <string>
 
 #include "cmd_options.h"
 
 TEST(ProgramOptions, ParseTest_EmptyArgsTest) {
-    char *args[] = {};
-    const int argc = 0;
+    std::array<const char *, 0> args;
 
     CryptoGuard::ProgramOptions options;
-    const bool res = options.Parse(argc, args);
-    EXPECT_FALSE(res);
-    const std::string etalon("");
-    EXPECT_EQ(options.GetInputFile(), etalon);
-    EXPECT_EQ(options.GetOutputFile(), etalon);
-    EXPECT_EQ(options.GetPassword(), etalon);
+    EXPECT_THROW(
+        {
+            try {
+                options.Parse(args.size(), const_cast<char **>(args.data()));
+            } catch (const std::runtime_error &e) {
+                EXPECT_STREQ("Args error: an empty set of arguments was passed.", e.what());
+                throw;
+            }
+        },
+        std::runtime_error);
 }
 
 TEST(ProgramOptions, ParseTest_CommandNotSpecified) {
     std::array<const char *, 7> args = {"CryptGuard", "-i", "input.txt", "-o", "output.txt", "-p", "123"};
     CryptoGuard::ProgramOptions options;
-    const bool res = options.Parse(args.size(), const_cast<char **>(args.data()));
-    EXPECT_FALSE(res);
+    EXPECT_THROW(
+        {
+            try {
+                options.Parse(args.size(), const_cast<char **>(args.data()));
+            } catch (const std::runtime_error &e) {
+                EXPECT_STREQ("Args error:'command' not specified", e.what());
+                throw;
+            }
+        },
+        std::runtime_error);
 }
 
 TEST(ProgramOptions, ParseTest_CommandNotSupported) {
     std::array<const char *, 9> args = {"CryptGuard", "-i",         "input.txt", "--command", "encrypt_2",
                                         "-o",         "output.txt", "-p",        "123"};
     CryptoGuard::ProgramOptions options;
-    const bool res = options.Parse(args.size(), const_cast<char **>(args.data()));
-    EXPECT_FALSE(res);
+    EXPECT_THROW(
+        {
+            try {
+                options.Parse(args.size(), const_cast<char **>(args.data()));
+            } catch (const std::runtime_error &e) {
+                EXPECT_STREQ("Args error:command not supported encrypt_2", e.what());
+                throw;
+            }
+        },
+        std::runtime_error);
 }
 
 TEST(ProgramOptions, ParseTest_InputFileNotSpecified) {
     std::array<const char *, 9> args = {"CryptGuard", "-i",         "",   "--command", "encrypt",
                                         "-o",         "output.txt", "-p", "123"};
     CryptoGuard::ProgramOptions options;
-    const bool res = options.Parse(args.size(), const_cast<char **>(args.data()));
-    EXPECT_FALSE(res);
-    const std::string etalon("");
-    EXPECT_EQ(options.GetInputFile(), etalon);
+    EXPECT_THROW(
+        {
+            try {
+                options.Parse(args.size(), const_cast<char **>(args.data()));
+            } catch (const std::runtime_error &e) {
+                std::cout << "MSG = " << e.what() << std::endl;
+                EXPECT_STREQ("Args error:input file not specified", e.what());
+                throw;
+            }
+        },
+        std::runtime_error);
 }
 
 TEST(ProgramOptions, ParseTest_OutputFileNotSpecified) {
     std::array<const char *, 9> args = {"CryptGuard", "-i", "input2.txt", "--command", "encrypt",
                                         "-o",         "",   "-p",         "123"};
     CryptoGuard::ProgramOptions options;
-    const bool res = options.Parse(args.size(), const_cast<char **>(args.data()));
-    EXPECT_FALSE(res);
-    const std::string etalon("");
-    EXPECT_EQ(options.GetCommand(), CryptoGuard::ProgramOptions::COMMAND_TYPE::ENCRYPT);
-    EXPECT_NE(options.GetInputFile(), etalon);
-    EXPECT_EQ(options.GetOutputFile(), etalon);
+    EXPECT_THROW(
+        {
+            try {
+                options.Parse(args.size(), const_cast<char **>(args.data()));
+            } catch (const std::runtime_error &e) {
+                EXPECT_STREQ("Args error:output file not specified", e.what());
+                throw;
+            }
+        },
+        std::runtime_error);
 }
 
 TEST(ProgramOptions, ParseTest_PasswordNotSpecified) {
     std::array<const char *, 9> args = {"CryptGuard", "-i",         "input.txt", "--command", "encrypt",
                                         "-o",         "output.txt", "-p",        ""};
     CryptoGuard::ProgramOptions options;
-    const bool res = options.Parse(args.size(), const_cast<char **>(args.data()));
-    EXPECT_FALSE(res);
-    const std::string etalon("");
-    EXPECT_EQ(options.GetPassword(), etalon);
+    EXPECT_THROW(
+        {
+            try {
+                options.Parse(args.size(), const_cast<char **>(args.data()));
+            } catch (const std::runtime_error &e) {
+                EXPECT_STREQ("Args error:password not specified", e.what());
+                throw;
+            }
+        },
+        std::runtime_error);
 }
 
 TEST(ProgramOptions, ParseTest_IncorrectMode) {
     std::array<const char *, 9> args = {"CryptGuard", "-i",       "input.txt", "-o", "output.txt",
                                         "--command",  "checksum", "-p",        "123"};
     CryptoGuard::ProgramOptions options;
-    const bool res = options.Parse(args.size(), const_cast<char **>(args.data()));
-    EXPECT_FALSE(res);
-    const std::string etalon("");
-    EXPECT_NE(options.GetPassword(), etalon);
-    EXPECT_NE(options.GetOutputFile(), etalon);
+    EXPECT_THROW(
+        {
+            try {
+                options.Parse(args.size(), const_cast<char **>(args.data()));
+            } catch (const std::runtime_error &e) {
+                EXPECT_STREQ("Args error:command checksum cannot be used with args password and output", e.what());
+                throw;
+            }
+        },
+        std::runtime_error);
 }
 
 TEST(ProgramOptions, ParseTest_IncryptCallShortFormat) {
@@ -167,6 +210,14 @@ TEST(ProgramOptions, ParseTest_InputOutputFilesAreTheSame) {
     std::array<const char *, 9> args = {"CryptGuard", "-i",        "input.txt", "--command", "encrypt",
                                         "-o",         "input.txt", "-p",        "123"};
     CryptoGuard::ProgramOptions options;
-    const bool res = options.Parse(args.size(), const_cast<char **>(args.data()));
-    EXPECT_FALSE(res);
+    EXPECT_THROW(
+        {
+            try {
+                options.Parse(args.size(), const_cast<char **>(args.data()));
+            } catch (const std::runtime_error &e) {
+                EXPECT_STREQ("Args error:the input file and output file are the same", e.what());
+                throw;
+            }
+        },
+        std::runtime_error);
 }
