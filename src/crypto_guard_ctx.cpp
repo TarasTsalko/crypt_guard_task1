@@ -38,7 +38,7 @@ public:
 
     std::string CalculateChecksum(std::iostream &inStream) {
         if (!inStream.good())
-            throw std::ios_base::failure("Invalide input streams");
+            throw std::ios_base::failure("Invalid input streams");
 
         auto deleter = [](EVP_MD_CTX *ptr) { EVP_MD_CTX_free(ptr); };
         std::unique_ptr<EVP_MD_CTX, decltype(deleter)> mdctx(EVP_MD_CTX_new());
@@ -89,7 +89,7 @@ private:
 
     void IncryptDecryptImpl(std::iostream &inStream, std::iostream &outStream, std::string_view password, int mode) {
         if (!inStream.good() || !outStream.good()) {
-            throw std::ios_base::failure("Invalide input streams");
+            throw std::ios_base::failure("Invalid input streams");
         }
 
         auto deleter = [](EVP_CIPHER_CTX *ptr) { EVP_CIPHER_CTX_free(ptr); };

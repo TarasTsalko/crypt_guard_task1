@@ -15,7 +15,7 @@ TEST(TestCryptoGuardCtx, BadInputDataStreamEncryptFileTest) {
             try {
                 cryptoGuardCtx.EncryptFile(inputStream, outputStream, password);
             } catch (const std::ios_base::failure &e) {
-                EXPECT_STREQ("Invalide input streams: iostream error", e.what());
+                EXPECT_STREQ("Invalid input streams: iostream error", e.what());
                 throw;
             }
         },
@@ -33,7 +33,7 @@ TEST(TestCryptoGuardCtx, BadOutputDataStreamEncryptFileTest) {
             try {
                 cryptoGuardCtx.EncryptFile(inputStream, outputStream, password);
             } catch (const std::ios_base::failure &e) {
-                EXPECT_STREQ("Invalide input streams: iostream error", e.what());
+                EXPECT_STREQ("Invalid input streams: iostream error", e.what());
                 throw;
             }
         },
@@ -62,7 +62,7 @@ TEST(TestCryptoGuardCtx, BadInputDataStreamDecryptFileTest) {
             try {
                 cryptoGuardCtx.DecryptFile(inputStream, outputStream, password);
             } catch (const std::ios_base::failure &e) {
-                EXPECT_STREQ("Invalide input streams: iostream error", e.what());
+                EXPECT_STREQ("Invalid input streams: iostream error", e.what());
                 throw;
             }
         },
@@ -80,7 +80,7 @@ TEST(TestCryptoGuardCtx, BadOutputDataStreamDecryptFileTest) {
             try {
                 cryptoGuardCtx.DecryptFile(inputStream, outputStream, password);
             } catch (const std::ios_base::failure &e) {
-                EXPECT_STREQ("Invalide input streams: iostream error", e.what());
+                EXPECT_STREQ("Invalid input streams: iostream error", e.what());
                 throw;
             }
         },
@@ -120,7 +120,7 @@ TEST(TestCryptoGuardCtx, BadInputSteamCheckSumTest) {
             try {
                 const std::string res = cryptoGuardCtx.CalculateChecksum(inputStream);
             } catch (const std::ios_base::failure &e) {
-                EXPECT_STREQ("Invalide input streams: iostream error", e.what());
+                EXPECT_STREQ("Invalid input streams: iostream error", e.what());
                 throw;
             }
         },
