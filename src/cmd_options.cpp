@@ -48,12 +48,12 @@ bool ProgramOptions::Parse(int argc, char *argv[]) {
         std::string argCommand = vm["command"].as<std::string>();
         const auto it = commandMapping_.find(argCommand);
         if (it == commandMapping_.end()) {
-            std::cout << "Args error: Unsuprted commond: " << argCommand << std::endl;
+            std::cout << "Args error:unsuprted commond:" << argCommand << std::endl;
             return false;
         }
         this->command_ = it->second;
     } else {
-        std::cout << "Args:error: 'command' not specified" << std::endl;
+        std::cout << "Args:error:'command' not specified" << std::endl;
         return false;
     }
 
@@ -63,25 +63,30 @@ bool ProgramOptions::Parse(int argc, char *argv[]) {
     if (vm.count("output"))
         outputFile_ = vm["output"].as<std::string>();
 
+    if (inputFile_ == outputFile_) {
+        std::cout << "Args error:the input file and output file are the same" << std::endl;
+        return false;
+    }
+
     if (vm.count("password"))
         password_ = vm["password"].as<std::string>();
 
     if (inputFile_.empty()) {
-        std::cout << "Args:error:input file not specified\n";
+        std::cout << "Args error:input file not specified" << std::endl;
         return false;
     }
     if (command_ != COMMAND_TYPE::CHECKSUM) {
         if (outputFile_.empty()) {
-            std::cout << "Args:error:output file not specified" << std::endl;
+            std::cout << "Args error:output file not specified" << std::endl;
             return false;
         }
         if (password_.empty()) {
-            std::cout << "Args:error:password not specified" << std::endl;
+            std::cout << "Args error:password not specified" << std::endl;
             return false;
         }
     } else {
         if (!outputFile_.empty() || !password_.empty()) {
-            std::cout << "Args:error:incorrect mode" << std::endl;
+            std::cout << "Args error:incorrect mode" << std::endl;
             return false;
         }
     }
