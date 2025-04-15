@@ -2,7 +2,6 @@
 #include "crypto_guard_ctx.h"
 #include <fstream>
 #include <iostream>
-#include <istream>
 #include <openssl/evp.h>
 #include <print>
 #include <stdexcept>
