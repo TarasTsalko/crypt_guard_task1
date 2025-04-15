@@ -7,8 +7,8 @@
 #include <sstream>
 
 #include <iostream>
-#include <vector>
 #include <openssl/err.h>
+#include <vector>
 
 namespace CryptoGuard {
 
@@ -37,7 +37,6 @@ public:
     };
 
     std::string CalculateChecksum(std::iostream &inStream) {
-        
         if (!inStream.good())
             throw std::ios_base::failure("Invalide input streams");
 
@@ -53,8 +52,9 @@ public:
         std::string dataBlock;
         unsigned int messageLen;
         while (inStream.good()) {
-            inStream >> dataBlock;
-            if (!EVP_DigestUpdate(mdctx.get(), dataBlock.data(), dataBlock.size()))
+            inStream.read(dataBlock.data(), BLOCK_SIZE_);
+            messageLen = inStream.gcount();
+            if (!EVP_DigestUpdate(mdctx.get(), dataBlock.data(), messageLen))
                 OpenSSLErrorHandling();
         }
 
@@ -88,7 +88,6 @@ private:
     }
 
     void IncryptDecryptImpl(std::iostream &inStream, std::iostream &outStream, std::string_view password, int mode) {
-        
         if (!inStream.good() || !outStream.good()) {
             throw std::ios_base::failure("Invalide input streams");
         }
@@ -102,32 +101,24 @@ private:
         if (!EVP_CipherInit_ex(ctx.get(), params.cipher, nullptr, params.key.data(), params.iv.data(), params.encrypt))
             OpenSSLErrorHandling();
 
-        unsigned int BLOCK_SIZE = 16;
-        std::vector<unsigned char> inBuf(BLOCK_SIZE), outBuf(BLOCK_SIZE + EVP_MAX_BLOCK_LENGTH);
+        std::vector<char> inBuf(BLOCK_SIZE_);
+        std::vector<char> outBuf(BLOCK_SIZE_ + EVP_MAX_BLOCK_LENGTH);
         int outLen = 0, part = 0;
         while (inStream.good()) {
-            part = 0;
-            for (int i = 0; i < BLOCK_SIZE; ++i) {
-                const unsigned char ch = static_cast<unsigned char>(inStream.get());
-                if (!inStream.good())
-                    break;
-                inBuf[i] = ch;
-                part++;
-            }
+            inStream.read(inBuf.data(), BLOCK_SIZE_);
+            part = inStream.gcount();
 
-            if (!EVP_CipherUpdate(ctx.get(), outBuf.data(), &outLen, inBuf.data(), static_cast<int>(part)))
+            if (!EVP_CipherUpdate(ctx.get(), reinterpret_cast<unsigned char *>(outBuf.data()), &outLen,
+                                  reinterpret_cast<unsigned char *>(inBuf.data()), static_cast<int>(part)))
                 OpenSSLErrorHandling();
 
-            for (int i = 0; i < outLen; ++i) {
-                outStream.put(outBuf[i]);
-            }
-
+            outStream.write(outBuf.data(), outLen);
             if (inStream.bad() || outStream.bad())
                 throw std::ios_base::failure("encrypting/decrypting error");
             outBuf.clear();
         }
 
-        if (!EVP_CipherFinal_ex(ctx.get(), outBuf.data(), &outLen))
+        if (!EVP_CipherFinal_ex(ctx.get(), reinterpret_cast<unsigned char *>(outBuf.data()), &outLen))
             OpenSSLErrorHandling();
 
         for (int i = 0; i < outLen; ++i) {
@@ -135,14 +126,16 @@ private:
         }
     }
 
-    void OpenSSLErrorHandling() const
-    {
+    void OpenSSLErrorHandling() const {
         unsigned long e = ERR_get_error();
-        std::vector<char> buff( 1024 );
-        ERR_error_string_n( e, buff.data(), buff.size() );
-        throw std::runtime_error( buff.data() );
+        std::vector<char> buff(1024);
+        ERR_error_string_n(e, buff.data(), buff.size());
+        throw std::runtime_error(buff.data());
     }
 
+private:
+    // Используется в двух методах, поэтому вынесено в member класса
+    unsigned int BLOCK_SIZE_ = 16;
 };
 
 CryptoGuardCtx::CryptoGuardCtx() : pImpl_(std::make_unique<CryptoGuardCtx::PImpl>()) {}

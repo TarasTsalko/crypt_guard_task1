@@ -104,7 +104,7 @@ TEST(TestCryptoGuardCtx, CheckSumTest) {
     const std::string inputData = "Hello World!";
     inputStream << inputData;
     const std::string res = cryptoGuardCtx.CalculateChecksum(inputStream);
-    const std::string etalonVal = "729e344a01e52c822bdfdec61e28d6eda02658d2e7d2b80a9b9029f41e212dde";
+    const std::string etalonVal = "7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069";
     EXPECT_STREQ(etalonVal.c_str(), res.c_str());
 }
 
