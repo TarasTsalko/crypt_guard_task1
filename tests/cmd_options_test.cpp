@@ -164,7 +164,7 @@ TEST(ProgramOptions, ParseTest_ChecksumCallFullFormat) {
 }
 
 TEST(ProgramOptions, ParseTest_InputOutputFilesAreTheSame) {
-    std::array<const char *, 9> args = {"CryptGuard", "-i",         "input.txt", "--command", "encrypt",
+    std::array<const char *, 9> args = {"CryptGuard", "-i",        "input.txt", "--command", "encrypt",
                                         "-o",         "input.txt", "-p",        "123"};
     CryptoGuard::ProgramOptions options;
     const bool res = options.Parse(args.size(), const_cast<char **>(args.data()));
